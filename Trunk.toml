@@ -1,0 +1,4 @@
+[build]
+filehash = false
+html_output = "filter.html"
+public_url = "/apps/filter/"
