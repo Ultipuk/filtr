@@ -21,40 +21,6 @@ pub enum UiLanguage {
     Russian,
 }
 
-#[derive(Clone, Copy)]
-#[expect(
-    dead_code,
-    reason = "Typed translation keys are being adopted incrementally"
-)]
-pub enum LKey {
-    MenuSettings,
-    MenuInfo,
-    MenuAbout,
-    MenuLanguage,
-    SectionFilter,
-    SectionResult,
-    SectionPlot,
-    ButtonCompute,
-    ButtonResetParameters,
-    MsgNoResults,
-}
-
-impl LKey {
-    const fn as_str(self) -> &'static str {
-        match self {
-            Self::MenuSettings => "menu-settings",
-            Self::MenuInfo => "menu-info",
-            Self::MenuAbout => "menu-about",
-            Self::MenuLanguage => "menu-language",
-            Self::SectionFilter => "section-filter",
-            Self::SectionResult => "section-result",
-            Self::SectionPlot => "section-plot",
-            Self::ButtonCompute => "button-compute",
-            Self::ButtonResetParameters => "button-reset-params",
-            Self::MsgNoResults => "msg-no-results",
-        }
-    }
-}
 
 static CURRENT_LANGUAGE: RwLock<LanguageIdentifier> = RwLock::new(langid!("en-US"));
 
@@ -79,10 +45,6 @@ pub fn tr(key: &str) -> String {
     LOCALES.lookup(&lang, key)
 }
 
-pub fn tr_key(key: LKey) -> String {
-    tr(key.as_str())
-}
-
 pub fn tr_args(key: &str, args: &[(&str, FluentValue<'_>)]) -> String {
     let lang = CURRENT_LANGUAGE
         .read()
@@ -95,13 +57,6 @@ pub fn tr_args(key: &str, args: &[(&str, FluentValue<'_>)]) -> String {
     }
 
     LOCALES.lookup_with_args(&lang, key, &fargs).clone()
-}
-
-pub fn is_russian() -> bool {
-    CURRENT_LANGUAGE
-        .read()
-        .map(|v| v.language == langid!("ru").language)
-        .unwrap_or(false)
 }
 
 #[cfg(not(target_arch = "wasm32"))]

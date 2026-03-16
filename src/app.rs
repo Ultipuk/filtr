@@ -1,5 +1,5 @@
 use crate::bindings::{Results, norfil2};
-use crate::i18n::{LKey, UiLanguage, is_russian, set_language, tr, tr_args, tr_key};
+use crate::i18n::{UiLanguage, set_language, tr, tr_args};
 use crate::models::{
     FilterMode, FilterType, common::CommonParameters, common_filter::CommonFilterParameters,
     cutoff::CutoffParameters, design::DesignParameters, operation::OperationParameters,
@@ -687,17 +687,10 @@ impl FilterApp {
         if let Err(error) = self.validate_inputs() {
             if triggered_by_auto_update {
                 self.auto_compute = false;
-                let message = if is_russian() {
-                    format!(
-                        "{error} Автовычисление отключено. Исправьте параметры и нажмите \"{}\".",
-                        tr("button-compute")
-                    )
-                } else {
-                    format!(
-                        "{error} Auto compute was disabled. Fix parameters and click \"{}\".",
-                        tr("button-compute")
-                    )
-                };
+                let message = tr_args(
+                    "msg-compute-auto-disabled",
+                    &[("error", FluentValue::from(error.as_str()))],
+                );
                 self.compute_error = None;
                 self.notice_message = Some(message);
             } else {
@@ -999,7 +992,7 @@ impl FilterApp {
             }
         }
 
-        crate::widgets::ParameterSection::new(tr_key(LKey::SectionPlot))
+        crate::widgets::ParameterSection::new(tr("section-plot"))
             .with_fill(ui.visuals().panel_fill)
             .show(ui, |ui| {
                 ui.indent("plot_controls_indent", |ui| {

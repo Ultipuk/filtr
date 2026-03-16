@@ -120,7 +120,7 @@ msg-reset-confirm-body = Reset all parameters to default values?
 msg-notice-title = Notice
 
 msg-error-prefix = Error:
-msg-compute-auto-disabled = { $error } Auto compute was disabled. Fix parameters and click "Compute".
+msg-compute-auto-disabled = { $error } Auto compute was disabled. Fix parameters and click "{ button-compute }".
 msg-compute-failed-auto-disabled = Computation error: parameters are out of valid range. Auto compute was disabled.
 
 err-dt-positive = Parameter Δt must be greater than 0.
@@ -140,6 +140,16 @@ table-col-frequency = Frequency
 table-col-magnitude = Magnitude
 table-col-phase = Phase
 csv-header-frequency = N,Frequency,Magnitude,Phase
+
+msg-params-saved = Parameters saved: { $path }
+msg-params-loaded = Parameters loaded: { $path }
+err-params-serialize = failed to serialize parameters: { $error }
+err-params-decode = failed to decode RON: { $error }
+err-params-write = failed to write file { $path }: { $error }
+err-params-save = Error: failed to save parameters: { $error }
+err-params-read = failed to read file { $path }: { $error }
+err-params-invalid-ron = invalid RON in { $path }: { $error }
+err-params-encoding = invalid file encoding: { $error }
 
 msg-csv-saved = CSV saved: { $path }
 msg-csv-saved-short = CSV saved.

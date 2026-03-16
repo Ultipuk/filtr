@@ -59,11 +59,10 @@ impl FilterApp {
         {
             let _ = ctx;
             self.notice_message = match save_params_with_native_dialog(&params) {
-                Ok(Some(path)) => Some(if is_russian() {
-                    format!("Параметры сохранены: {path}")
-                } else {
-                    format!("Parameters saved: {path}")
-                }),
+                Ok(Some(path)) => Some(tr_args(
+                    "msg-params-saved",
+                    &[("path", FluentValue::from(path.as_str()))],
+                )),
                 Ok(None) => None,
                 Err(error) => Some(format!("{} {error}", tr("msg-error-prefix"))),
             };
@@ -87,11 +86,10 @@ impl FilterApp {
                     self.plot_needs_reset = true;
                     self.recompute_pending = true;
                     self.input_change_time = ctx.input(|i| i.time);
-                    self.notice_message = Some(if is_russian() {
-                        format!("Параметры загружены: {path}")
-                    } else {
-                        format!("Parameters loaded: {path}")
-                    });
+                    self.notice_message = Some(tr_args(
+                        "msg-params-loaded",
+                        &[("path", FluentValue::from(path.as_str()))],
+                    ));
                     ctx.request_repaint();
                 }
                 Ok(None) => {}
@@ -175,32 +173,23 @@ fn encode_png(image: &egui::ColorImage) -> Result<Vec<u8>, String> {
             image::ExtendedColorType::Rgba8,
         )
         .map_err(|e| {
-            if is_russian() {
-                format!("не удалось подготовить PNG: {e}")
-            } else {
-                format!("failed to prepare PNG: {e}")
-            }
+            let error = e.to_string();
+            tr_args("err-png-prepare", &[("error", FluentValue::from(error))])
         })?;
     Ok(bytes)
 }
 
 fn encode_compute_parameters_ron(params: &ComputeParametersRon) -> Result<String, String> {
     ron::ser::to_string_pretty(params, ron::ser::PrettyConfig::new()).map_err(|e| {
-        if is_russian() {
-            format!("не удалось сериализовать параметры: {e}")
-        } else {
-            format!("failed to serialize parameters: {e}")
-        }
+        let error = e.to_string();
+        tr_args("err-params-serialize", &[("error", FluentValue::from(error))])
     })
 }
 
 fn decode_compute_parameters_ron(content: &str) -> Result<ComputeParametersRon, String> {
     ron::from_str::<ComputeParametersRon>(content).map_err(|e| {
-        if is_russian() {
-            format!("не удалось декодировать RON: {e}")
-        } else {
-            format!("failed to decode RON: {e}")
-        }
+        let error = e.to_string();
+        tr_args("err-params-decode", &[("error", FluentValue::from(error))])
     })
 }
 
@@ -220,16 +209,20 @@ fn save_params_with_native_dialog(params: &ComputeParametersRon) -> Result<Optio
     }
 
     let encoded = encode_compute_parameters_ron(params)?;
+    let path_display = path.display().to_string();
 
     std::fs::write(&path, encoded).map_err(|e| {
-        if is_russian() {
-            format!("не удалось записать файл {}: {e}", path.display())
-        } else {
-            format!("failed to write file {}: {e}", path.display())
-        }
+        let error = e.to_string();
+        tr_args(
+            "err-params-write",
+            &[
+                ("path", FluentValue::from(path_display.as_str())),
+                ("error", FluentValue::from(error)),
+            ],
+        )
     })?;
 
-    Ok(Some(path.display().to_string()))
+    Ok(Some(path_display))
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -252,12 +245,11 @@ fn save_params_with_native_dialog(ctx: egui::Context, params: ComputeParametersR
                 }
             };
             if let Err(e) = handle.write(encoded.as_bytes()).await {
-                let message = if is_russian() {
-                    format!("Ошибка: не удалось сохранить параметры: {e}")
-                } else {
-                    format!("Error: failed to save parameters: {e}")
-                };
-                push_save_notice(SaveNoticeKind::Csv, message);
+                let error = e.to_string();
+                push_save_notice(
+                    SaveNoticeKind::Csv,
+                    tr_args("err-params-save", &[("error", FluentValue::from(error))]),
+                );
             }
         }
         ctx.request_repaint();
@@ -274,23 +266,29 @@ fn load_params_with_native_dialog() -> Result<Option<(String, ComputeParametersR
         return Ok(None);
     };
 
+    let path_display = path.display().to_string();
     let content = std::fs::read_to_string(&path).map_err(|e| {
-        if is_russian() {
-            format!("не удалось прочитать файл {}: {e}", path.display())
-        } else {
-            format!("failed to read file {}: {e}", path.display())
-        }
+        let error = e.to_string();
+        tr_args(
+            "err-params-read",
+            &[
+                ("path", FluentValue::from(path_display.as_str())),
+                ("error", FluentValue::from(error)),
+            ],
+        )
     })?;
 
     let decoded = decode_compute_parameters_ron(&content).map_err(|e| {
-        if is_russian() {
-            format!("некорректный RON в {}: {e}", path.display())
-        } else {
-            format!("invalid RON in {}: {e}", path.display())
-        }
+        tr_args(
+            "err-params-invalid-ron",
+            &[
+                ("path", FluentValue::from(path_display.as_str())),
+                ("error", FluentValue::from(e)),
+            ],
+        )
     })?;
 
-    Ok(Some((path.display().to_string(), decoded)))
+    Ok(Some((path_display, decoded)))
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -304,11 +302,8 @@ fn load_params_with_native_dialog(ctx: egui::Context) {
             let bytes = handle.read().await;
             let decoded = String::from_utf8(bytes)
                 .map_err(|e| {
-                    if is_russian() {
-                        format!("некорректная кодировка файла: {e}")
-                    } else {
-                        format!("invalid file encoding: {e}")
-                    }
+                    let error = e.to_string();
+                    tr_args("err-params-encoding", &[("error", FluentValue::from(error))])
                 })
                 .and_then(|content| decode_compute_parameters_ron(&content));
 
@@ -334,20 +329,21 @@ fn save_csv_with_native_dialog(_ctx: egui::Context, csv: String) {
             if path.extension().is_none() {
                 path.set_extension("csv");
             }
+            let path_display = path.display().to_string();
             match std::fs::File::create(&path).and_then(|mut f| f.write_all(csv.as_bytes())) {
-                Ok(()) => {
-                    if is_russian() {
-                        format!("CSV сохранен: {}", path.display())
-                    } else {
-                        format!("CSV saved: {}", path.display())
-                    }
-                }
+                Ok(()) => tr_args(
+                    "msg-csv-saved",
+                    &[("path", FluentValue::from(path_display.as_str()))],
+                ),
                 Err(e) => {
-                    if is_russian() {
-                        format!("Ошибка: не удалось записать CSV {}: {e}", path.display())
-                    } else {
-                        format!("Error: failed to write CSV {}: {e}", path.display())
-                    }
+                    let error = e.to_string();
+                    tr_args(
+                        "err-csv-write",
+                        &[
+                            ("path", FluentValue::from(path_display.as_str())),
+                            ("error", FluentValue::from(error)),
+                        ],
+                    )
                 }
             }
         }
@@ -366,12 +362,11 @@ fn save_csv_with_native_dialog(ctx: egui::Context, csv: String) {
             .await;
         if let Some(handle) = file {
             if let Err(e) = handle.write(csv.as_bytes()).await {
-                let message = if is_russian() {
-                    format!("Ошибка: не удалось записать CSV: {e}")
-                } else {
-                    format!("Error: failed to write CSV: {e}")
-                };
-                push_save_notice(SaveNoticeKind::Csv, message);
+                let error = e.to_string();
+                push_save_notice(
+                    SaveNoticeKind::Csv,
+                    tr_args("err-csv-write-short", &[("error", FluentValue::from(error))]),
+                );
             }
         }
         ctx.request_repaint();
@@ -412,18 +407,21 @@ fn save_plot_with_native_dialog_impl(
     if path.extension().is_none() {
         path.set_extension("png");
     }
+    let path_display = path.display().to_string();
     std::fs::write(&path, png_bytes).map_err(|e| {
-        if is_russian() {
-            format!("не удалось сохранить PNG {}: {e}", path.display())
-        } else {
-            format!("failed to save PNG {}: {e}", path.display())
-        }
+        let error = e.to_string();
+        tr_args(
+            "err-png-save",
+            &[
+                ("path", FluentValue::from(path_display.as_str())),
+                ("error", FluentValue::from(error)),
+            ],
+        )
     })?;
-    Ok(if is_russian() {
-        format!("График сохранен: {}", path.display())
-    } else {
-        format!("Plot saved: {}", path.display())
-    })
+    Ok(tr_args(
+        "msg-plot-saved",
+        &[("path", FluentValue::from(path_display.as_str()))],
+    ))
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -457,12 +455,11 @@ fn save_plot_with_native_dialog(
             .await;
         if let Some(handle) = file {
             if let Err(e) = handle.write(&png_bytes).await {
-                let message = if is_russian() {
-                    format!("Ошибка: не удалось сохранить PNG: {e}")
-                } else {
-                    format!("Error: failed to save PNG: {e}")
-                };
-                push_save_notice(SaveNoticeKind::Plot, message);
+                let error = e.to_string();
+                push_save_notice(
+                    SaveNoticeKind::Plot,
+                    tr_args("err-png-save-short", &[("error", FluentValue::from(error))]),
+                );
             }
         }
         ctx.request_repaint();
