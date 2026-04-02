@@ -1102,7 +1102,12 @@ impl FilterApp {
             .show_x(false)
             .show_y(false)
             .height(ui.available_height())
-            .custom_x_axes([AxisHints::new_x().label(x_axis_label)].into());
+            .custom_x_axes(
+                [AxisHints::new_x()
+                    .label(x_axis_label)
+                    .label_spacing(egui::Rangef::new(20.0, 40.0))]
+                .into(),
+            );
 
         if self.plot_show_legend {
             plot = plot.legend(Legend::default());
