@@ -995,6 +995,7 @@ impl FilterApp {
 
         crate::widgets::ParameterSection::new(tr("section-plot"))
             .with_fill(ui.visuals().panel_fill)
+            .default_open(false)
             .show(ui, |ui| {
                 ui.indent("plot_controls_indent", |ui| {
                     if crate::widgets::parameter_section_button(ui, tr("button-save-plot"))

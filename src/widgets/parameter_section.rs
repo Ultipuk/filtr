@@ -3,6 +3,7 @@ use egui::{CollapsingHeader, Ui, WidgetText};
 /// Main container for parameter sections.
 pub struct ParameterSection {
     title: WidgetText,
+    default_open_: bool,
     fill: Option<egui::Color32>,
 }
 
@@ -10,12 +11,18 @@ impl ParameterSection {
     pub fn new(title: impl Into<WidgetText>) -> Self {
         Self {
             title: title.into(),
+            default_open_: true,
             fill: None,
         }
     }
 
     pub fn with_fill(mut self, fill: egui::Color32) -> Self {
         self.fill = Some(fill);
+        self
+    }
+
+    pub fn default_open(mut self, value: bool) -> Self {
+        self.default_open_ = value;
         self
     }
 
@@ -35,7 +42,7 @@ impl ParameterSection {
                 let expanded_width = half_width + ui.spacing().item_spacing.x;
 
                 let openness = CollapsingHeader::new(self.title.text())
-                    .default_open(true)
+                    .default_open(self.default_open_)
                     .show_unindented(ui, |ui| content(ui))
                     .openness;
 
