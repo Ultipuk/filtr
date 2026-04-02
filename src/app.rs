@@ -751,6 +751,7 @@ impl FilterApp {
 
         let now = ctx.input(|i| i.time);
         let elapsed_ms = (now - self.input_change_time) * 1000.0;
+
         if elapsed_ms < self.auto_compute_delay_ms as f64 {
             ctx.request_repaint_after(std::time::Duration::from_millis(
                 self.auto_compute_delay_ms as u64,

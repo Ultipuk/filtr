@@ -23,6 +23,7 @@ theme-breeze = Breeze
 theme-solarized = Solarized
 
 section-filter = Filter
+section-compute = Compute
 section-result = Results
 section-main-params = Main Parameters
 section-recursive-params = Recursive Filter Parameters

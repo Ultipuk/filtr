@@ -53,9 +53,7 @@ impl FilterApp {
     }
 
     pub(super) fn show_right_parameters_panel(&mut self, ctx: &egui::Context) {
-        use crate::widgets::{
-            ParameterSection, parameter_menu, parameter_section_button, parameter_section_separator,
-        };
+        use crate::widgets::{ParameterSection, parameter_menu, parameter_section_button};
 
         egui::SidePanel::right("parameters_panel")
             .min_width(300.0)
@@ -66,9 +64,43 @@ impl FilterApp {
                             self.common_parameters.show_filter_mode(ui);
                             self.common_parameters.show_filter_type(ui);
                             self.common_parameters.show_filter_category(ui);
+                        });
 
-                            parameter_section_separator(ui);
+                        ParameterSection::new(tr("section-main-params")).show(ui, |ui| {
+                            self.common_parameters.show_sampling_rate(ui);
 
+                            self.common_filter_parameters.show(ui);
+
+                            self.cutoff_parameters
+                                .show(ui, &self.common_parameters.filter_category);
+                        });
+
+                        if self.common_parameters.filter_type == FilterType::Recursive
+                            && self.common_parameters.mode == FilterMode::Design
+                        {
+                            ParameterSection::new(tr("section-recursive-params")).show(ui, |ui| {
+                                self.recursive_parameters.show(ui);
+                            });
+                        }
+
+                        match self.common_parameters.mode {
+                            FilterMode::Design => {
+                                ParameterSection::new(tr("section-design-params")).show(ui, |ui| {
+                                    self.design_parameters.show(ui);
+                                });
+                            }
+                            FilterMode::Operation => {
+                                ParameterSection::new(tr("section-operation-params")).show(
+                                    ui,
+                                    |ui| {
+                                        self.operation_parameters
+                                            .show(ui, self.common_parameters.filter_type);
+                                    },
+                                );
+                            }
+                        }
+
+                        ParameterSection::new(tr("section-compute")).show(ui, |ui| {
                             let _ = crate::widgets::parameter_section_checkbox_row(
                                 ui,
                                 "",
@@ -108,40 +140,6 @@ impl FilterApp {
                                     self.results = Some(results);
                                 }
                             });
-                        }
-
-                        ParameterSection::new(tr("section-main-params")).show(ui, |ui| {
-                            self.common_parameters.show_sampling_rate(ui);
-
-                            self.common_filter_parameters.show(ui);
-
-                            self.cutoff_parameters
-                                .show(ui, &self.common_parameters.filter_category);
-                        });
-
-                        if self.common_parameters.filter_type == FilterType::Recursive
-                            && self.common_parameters.mode == FilterMode::Design
-                        {
-                            ParameterSection::new(tr("section-recursive-params")).show(ui, |ui| {
-                                self.recursive_parameters.show(ui);
-                            });
-                        }
-
-                        match self.common_parameters.mode {
-                            FilterMode::Design => {
-                                ParameterSection::new(tr("section-design-params")).show(ui, |ui| {
-                                    self.design_parameters.show(ui);
-                                });
-                            }
-                            FilterMode::Operation => {
-                                ParameterSection::new(tr("section-operation-params")).show(
-                                    ui,
-                                    |ui| {
-                                        self.operation_parameters
-                                            .show(ui, self.common_parameters.filter_type);
-                                    },
-                                );
-                            }
                         }
                     });
                 });
