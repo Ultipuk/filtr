@@ -21,7 +21,6 @@ pub enum UiLanguage {
     Russian,
 }
 
-
 static CURRENT_LANGUAGE: RwLock<LanguageIdentifier> = RwLock::new(langid!("en-US"));
 
 pub fn set_language(selection: UiLanguage) {

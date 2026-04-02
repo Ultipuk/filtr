@@ -17,7 +17,7 @@ pub use parameter_section_color_palette::*;
 pub use parameter_section_combo_box::*;
 pub use parameter_section_triple_button_row::*;
 // pub use parameter_section_selectables::*;
-pub use parameter_section_separator::*;
+// pub use parameter_section_separator::*;
 pub use parameter_section_value::*;
 
 pub mod parameter_menu;

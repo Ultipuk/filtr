@@ -182,7 +182,10 @@ fn encode_png(image: &egui::ColorImage) -> Result<Vec<u8>, String> {
 fn encode_compute_parameters_ron(params: &ComputeParametersRon) -> Result<String, String> {
     ron::ser::to_string_pretty(params, ron::ser::PrettyConfig::new()).map_err(|e| {
         let error = e.to_string();
-        tr_args("err-params-serialize", &[("error", FluentValue::from(error))])
+        tr_args(
+            "err-params-serialize",
+            &[("error", FluentValue::from(error))],
+        )
     })
 }
 
@@ -303,7 +306,10 @@ fn load_params_with_native_dialog(ctx: egui::Context) {
             let decoded = String::from_utf8(bytes)
                 .map_err(|e| {
                     let error = e.to_string();
-                    tr_args("err-params-encoding", &[("error", FluentValue::from(error))])
+                    tr_args(
+                        "err-params-encoding",
+                        &[("error", FluentValue::from(error))],
+                    )
                 })
                 .and_then(|content| decode_compute_parameters_ron(&content));
 
@@ -365,7 +371,10 @@ fn save_csv_with_native_dialog(ctx: egui::Context, csv: String) {
                 let error = e.to_string();
                 push_save_notice(
                     SaveNoticeKind::Csv,
-                    tr_args("err-csv-write-short", &[("error", FluentValue::from(error))]),
+                    tr_args(
+                        "err-csv-write-short",
+                        &[("error", FluentValue::from(error))],
+                    ),
                 );
             }
         }
